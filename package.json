@@ -1,0 +1,14 @@
+{
+  "name": "com.uxios.core",
+  "displayName": "Uxios Core",
+  "version": "0.1.0",
+  "unity": "2021.3",
+  "description": "A lightweight, async-first HTTP client for Unity. Free core version.",
+  "author": {
+    "name": "Uxios Team",
+    "email": "contact@uxios.dev"
+  },
+  "license": "MIT",
+  "keywords": ["http", "rest", "webrequest", "async", "unity"],
+  "type": "library"
+}
