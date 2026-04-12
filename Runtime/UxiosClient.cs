@@ -9,6 +9,7 @@ using Uxios.Core.Exceptions;
 using Uxios.Core.Models;
 using Uxios.Core.Plugins;
 using Uxios.Core.Internal;
+using UnityEngine;
 
 namespace Uxios.Core
 {
@@ -31,20 +32,38 @@ namespace Uxios.Core
             var tcs = new TaskCompletionSource<UxiosResponse<T>>();
             var cts = CancellationTokenSource.CreateLinkedTokenSource(request.CancellationToken);
 
-            UnityWebRequest uwr = new UnityWebRequest(Config.BaseUrl + request.Url, request.Method.ToString().ToUpper());
-            uwr.downloadHandler = new DownloadHandlerBuffer();
+            UnityWebRequest uwr;
+            if (request.IsMultipart)
+            {
+                // Multipart/form-data
+                var form = new WWWForm();
+                foreach (var field in request.FormFields)
+                {
+                    form.AddField(field.Key, field.Value);
+                }
+                foreach (var file in request.Files)
+                {
+                    form.AddBinaryData(file.FieldName, file.Data, file.FileName, file.ContentType);
+                }
+                uwr = UnityWebRequest.Post(Config.BaseUrl + request.Url, form);
+                uwr.method = request.Method.ToString().ToUpper(); // Support PUT, PATCH, etc.
+            }
+            else
+            {
+                uwr = new UnityWebRequest(Config.BaseUrl + request.Url, request.Method.ToString().ToUpper());
+                uwr.downloadHandler = new DownloadHandlerBuffer();
+                if (!string.IsNullOrEmpty(request.Body))
+                {
+                    var bodyRaw = System.Text.Encoding.UTF8.GetBytes(request.Body);
+                    uwr.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                    uwr.SetRequestHeader("Content-Type", "application/json");
+                }
+            }
 
             foreach (var header in Config.DefaultHeaders)
                 uwr.SetRequestHeader(header.Key, header.Value);
             foreach (var header in request.Headers)
                 uwr.SetRequestHeader(header.Key, header.Value);
-
-            if (!string.IsNullOrEmpty(request.Body))
-            {
-                var bodyRaw = System.Text.Encoding.UTF8.GetBytes(request.Body);
-                uwr.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                uwr.SetRequestHeader("Content-Type", "application/json");
-            }
 
             var op = uwr.SendWebRequest();
             cts.Token.Register(() => uwr.Abort());

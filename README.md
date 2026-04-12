@@ -32,6 +32,29 @@ Debug.Log(response.Data.title);
 var newPost = new MyData { title = "foo", body = "bar" };
 var postResponse = await UxiosApi.Post<MyData>("https://jsonplaceholder.typicode.com/posts", newPost);
 Debug.Log(postResponse.Data.id);
+ 
+ // FILE UPLOAD (multipart/form-data)
+ byte[] fileData = System.Text.Encoding.UTF8.GetBytes("Hello, world!");
+ var uploadResponse = await UxiosApi.SendFile<object>(
+     url: "https://httpbin.org/post",
+     fileData: fileData,
+     fileName: "hello.txt",
+     fieldName: "file",
+     contentType: "text/plain",
+     formFields: new Dictionary<string, string> { { "description", "Test file upload" } },
+     method: HttpMethod.Post
+ );
+ Debug.Log(uploadResponse.StatusCode);
+ 
+ // CUSTOM REQUEST (advanced)
+ var customRequest = new UxiosRequest {
+     Method = HttpMethod.Patch,
+     Url = "https://jsonplaceholder.typicode.com/posts/1",
+     Body = "{ \"title\": \"updated\" }",
+     Headers = new Dictionary<string, string> { { "Authorization", "Bearer ..." } }
+ };
+ var customResponse = await UxiosApi.SendAsync<object>(customRequest);
+ Debug.Log(customResponse.StatusCode);
 
 // Define your data model
 [System.Serializable]
@@ -51,6 +74,8 @@ public class MyData {
 - Global config for base URL, timeout, and headers
 - CancellationToken support
 - Beautiful request/response logging
+- File upload (multipart/form-data)
+- Custom request support (all HTTP methods, headers, body, files)
 
 ---
 

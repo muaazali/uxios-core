@@ -59,5 +59,45 @@ namespace Uxios.Core
         {
             return new UxiosClient(config);
         }
+
+        /// <summary>
+        /// Send a file (multipart/form-data) with optional form fields.
+        /// </summary>
+        public static Task<UxiosResponse<T>> SendFile<T>(
+            string url,
+            byte[] fileData,
+            string fileName,
+            string fieldName = "file",
+            string contentType = "application/octet-stream",
+            System.Collections.Generic.Dictionary<string, string> formFields = null,
+            HttpMethod method = HttpMethod.Post,
+            UxiosConfig config = null,
+            CancellationToken cancellationToken = default)
+        {
+            var file = new Uxios.Core.Models.UxiosFile
+            {
+                FieldName = fieldName,
+                FileName = fileName,
+                Data = fileData,
+                ContentType = contentType
+            };
+            var req = new UxiosRequest
+            {
+                Method = method,
+                Url = url,
+                Files = new System.Collections.Generic.List<UxiosFile> { file },
+                FormFields = formFields ?? new System.Collections.Generic.Dictionary<string, string>(),
+                CancellationToken = cancellationToken
+            };
+            return SendAsync<T>(req, config);
+        }
+
+        /// <summary>
+        /// Send a custom UxiosRequest (including multipart/form-data).
+        /// </summary>
+        public static Task<UxiosResponse<T>> SendAsync<T>(UxiosRequest request, UxiosConfig config = null)
+        {
+            return (config == null ? _defaultClient : new UxiosClient(config)).SendAsync<T>(request);
+        }
     }
 }
