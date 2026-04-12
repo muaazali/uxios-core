@@ -1,7 +1,7 @@
 {
   "name": "com.uxios.core",
   "displayName": "Uxios Core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "unity": "2021.3",
   "description": "A lightweight, async-first HTTP client for Unity. Free core version.",
   "author": {
